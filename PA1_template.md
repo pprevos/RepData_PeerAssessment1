@@ -13,18 +13,34 @@ Show any code that is needed to
 2. Process/transform the data (if necessary) into a format suitable for your analysis
 
 ### Load the data
-```{r load}
+
+```r
 unzip("activity.zip")
 activity <- read.csv("activity.csv")
 
 str(activity)
 ```
 
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : chr  "2012-10-01" "2012-10-01" "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+```
+
 ### Process/transform the data
-```{r transform}
+
+```r
 activity$date <- as.Date(activity$date)
 
 str(activity)
+```
+
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Date, format: "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
 ```
 
 ## What is mean total number of steps taken per day?
@@ -37,27 +53,37 @@ For this part of the assignment, you can ignore the missing values in the datase
 
 
 ### Total number of steps taken per day
-```{r}
+
+```r
 total_steps <- tapply(activity$steps, activity$date, sum)
 summary(total_steps)
 ```
 
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+##      41    8841   10765   10766   13294   21194       8
+```
+
 ### Histogram of the total number of steps taken each day
-```{r hist, fig.cap="Figure 1: Histogram of the total number of steps taken each day."}
+
+```r
 hist(total_steps, 
      breaks = 20,
      main = NA,
      xlab = "Total steps per day")
 ```
 
+![Figure 1: Histogram of the total number of steps taken each day.](PA1_template_files/figure-html/hist-1.png)
+
 ### Mean and median of the total number of steps taken per day
-```{r}
+
+```r
 mean_steps <- mean(total_steps, na.rm = TRUE)
 median_steps <- median(total_steps, na.rm = TRUE)
 ```
 
-- The mean of the total number of steps taken per day is `r format(round(mean_steps), big.mark = ",")`.
-- The median of the total number of steps taken per day is `r format(round(median_steps), big.mark = ",")`.
+- The mean of the total number of steps taken per day is 10,766.
+- The median of the total number of steps taken per day is 10,765.
 
 ## What is the average daily activity pattern?
 
@@ -66,7 +92,8 @@ median_steps <- median(total_steps, na.rm = TRUE)
 
 ### Time series
     
-```{r timeseries, fig.cap = "Figure 2: Average number of steps per time interval."}
+
+```r
 interval_steps <- tapply(activity$steps, activity$interval, mean, na.rm = TRUE)
 
 plot(names(interval_steps), interval_steps, type = "l",
@@ -74,13 +101,16 @@ plot(names(interval_steps), interval_steps, type = "l",
      ylab = "Mean steps")
 ```
 
+![Figure 2: Average number of steps per time interval.](PA1_template_files/figure-html/timeseries-1.png)
+
 ### Maximum number of steps
 
-```{r maxsteps}
+
+```r
 max_steps <- names(interval_steps)[which.max(interval_steps)]
 ```
 
-The most active time in the day is at interval `r max_steps`.
+The most active time in the day is at interval 835.
 
 ## Imputing missing values
 
@@ -93,23 +123,28 @@ Note that there are a number of days/intervals where there are missing values (c
 
 ### Total number of missing values in the dataset
 
-```{r nasteps}
+
+```r
 na_steps <- sum(is.na(activity$steps))
 ```
 
-The total number of missing step counts in the dataset is `r na_steps` (`r round(na_steps/nrow(activity) * 100, 1)`% of all observations).
+The total number of missing step counts in the dataset is 2304 (13.1% of all observations).
 
 ### Strategy for filling in all of the missing values in the dataset
 
 The image in Figure 3 visualises the missing data points in the activity data. The graph seems to suggest that the data is _Missing Completely at Random_ (MCAR). This means that there is no correlation between missing items and other items (random error, such as equipment failure). Based on this conclusion, we can fill the missing data with the mean value. This is justified by the fact that the distribution of steps is almost normal (median $\approx$ mean)
 
-```{r navis, fig.cap="Figure 3: Missing data in activity dataframe."}
+
+```r
 library(visdat)
 vis_miss(activity)
 ```
 
+![Figure 3: Missing data in activity dataframe.](PA1_template_files/figure-html/navis-1.png)
+
 ### Missing data imputation
-```{r impute, message=FALSE}
+
+```r
 library(dplyr)
 
 activity_means <- activity %>% 
@@ -124,8 +159,19 @@ activity_imputed <- activity %>%
 head(activity_imputed)
 ```
 
+```
+##         date interval steps imputed_steps
+## 1 2012-10-01        0    NA             2
+## 2 2012-10-01        5    NA             0
+## 3 2012-10-01       10    NA             0
+## 4 2012-10-01       15    NA             0
+## 5 2012-10-01       20    NA             0
+## 6 2012-10-01       25    NA             2
+```
+
 ### Histogram of the total number of steps taken each day
-```{r hist2, fig.cap="Figure 1: Histogram of the total number of steps taken each day (imputed)."}
+
+```r
 total_steps_imputed <- tapply(activity_imputed$steps, activity_imputed$date, sum)
 
 hist(total_steps_imputed, 
@@ -134,14 +180,17 @@ hist(total_steps_imputed,
      xlab = "Total steps per day (imputed)")
 ```
 
+![Figure 1: Histogram of the total number of steps taken each day (imputed).](PA1_template_files/figure-html/hist2-1.png)
+
 ### Impact of imputing missing data on the estimates of the total daily number of steps
 
-```{r}
+
+```r
 mean_steps_imputed <- mean(total_steps_imputed, na.rm = TRUE)
 median_steps_imputed <- median(total_steps_imputed, na.rm = TRUE)
 ```
 
-The difference in mean steps for the original and imputed data is `r mean_steps - mean_steps_imputed` steps and for the median the difference is `r median_steps - median_steps_imputed` steps.
+The difference in mean steps for the original and imputed data is 0 steps and for the median the difference is 0 steps.
 
 Imputation has no impact on the descriptive statistics of this data.
 
@@ -153,7 +202,8 @@ For this part the `weekdays()` function may be of some help here. Use the datase
 1. Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
 2. Make a panel plot containing a time series plot (i.e. `type = "l"`) of the 5-minute interval (_x_-axis) and the average number of steps taken, averaged across all weekday days or weekend days (_y_-axis).
 
-```{r weekdays, message=FALSE}
+
+```r
 library(lattice)
 
 week_type_steps <- activity_imputed %>% 
@@ -170,6 +220,8 @@ xyplot(data = week_type_steps,
        xlab = "Interval",
        ylab = "Number of steps")
 ```
+
+![](PA1_template_files/figure-html/weekdays-1.png)<!-- -->
 
 The graph seems to suggest that activity during weekends is slightly higher past the morning peak. Further analysis is required to test this hypothesis.
 
